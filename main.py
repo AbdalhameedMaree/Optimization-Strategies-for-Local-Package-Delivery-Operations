@@ -1,6 +1,6 @@
 import sys
 from SA import simulated_annealing
-#from GA import genetic_algorithm  # Assume you have this
+from GA import GeneticAlgorithm  # Assume you have this
 from vehicle import Vehicle
 from package import Package
 from plot import plot_best_vehicle_routes
@@ -59,7 +59,7 @@ class DeliveryInterface:
         print("1. Simulated Annealing")
         print("2. Genetic Algorithm")
         algo_choice = input("Select algorithm: ").strip()
-        
+    
         if algo_choice == '1':
             self.algorithm = 'SA'
             print("\nSimulated Annealing Parameters:")
@@ -68,11 +68,9 @@ class DeliveryInterface:
         elif algo_choice == '2':
             self.algorithm = 'GA'
             print("\nGenetic Algorithm Parameters:")
+            self.params['num_generations'] = int(input("Number of generations (e.g., 100): "))
             self.params['pop_size'] = int(input("Population size (50-100): "))
             self.params['mutation_rate'] = float(input("Mutation rate (0.01-0.1): "))
-            
-        else:
-            print("Invalid algorithm choice!")
 
     def run_optimization(self):
         if not self.vehicles or not self.packages:
@@ -81,7 +79,7 @@ class DeliveryInterface:
             
         if self.algorithm == 'SA':
             print("\nRunning Simulated Annealing...")
-            self.best_state = simulated_annealing(
+            self.best_state , self.cost_with_penalty = simulated_annealing(
                 self.vehicles, 
                 self.packages,
                 cooling_rate=self.params.get('cooling_rate', 0.95)
@@ -89,11 +87,12 @@ class DeliveryInterface:
             
         elif self.algorithm == 'GA':
             print("\nRunning Genetic Algorithm...")
-            self.best_state = genetic_algorithm(
+            self.best_state , self.cost_with_penalty  = GeneticAlgorithm(
                 self.vehicles,
                 self.packages,
-                pop_size=self.params.get('pop_size', 50),
-                mutation_rate=self.params.get('mutation_rate', 0.05)
+                self.params.get('num_generations', 100),  # Correct order
+                self.params.get('pop_size', 50),
+                self.params.get('mutation_rate', 0.05)
             )
             
         print("Optimization complete!")
@@ -115,8 +114,9 @@ class DeliveryInterface:
             print(f"Capacity: {vehicle.size}/{vehicle.capacity} kg")
             print(f"Route: {vehicle.route}")
             print(f"Distance: {dist:.2f} km")
-            
-        print(f"\nTotal System Distance: {total_cost:.2f} km")
+
+        print(f"\nTotal System Distance Priority Penalty: {self.cost_with_penalty:.2f} km") 
+        print(f"Total System Distance: {total_cost:.2f} km")
 
     def plot_routes(self):
         plot_best_vehicle_routes(self.best_state)
