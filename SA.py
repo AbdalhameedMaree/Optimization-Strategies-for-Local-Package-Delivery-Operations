@@ -182,4 +182,4 @@ def simulated_annealing(vehicles, packages,cooling_rate):
     # Close interactive plot to unblock terminal
     plt.ioff()
     plt.close(fig)  # <-- Close the figure explicitly
-    return current
+    return current , total_cost(current)
