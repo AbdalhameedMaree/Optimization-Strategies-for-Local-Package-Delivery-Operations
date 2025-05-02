@@ -20,9 +20,8 @@ class DeliveryInterface:
             print("1. Load Vehicle File")
             print("2. Load Package File")
             print("3. Set Algorithm Parameters")
-            print("4. Run Optimization")
-            print("5. Show Results")
-            print("6. Exit")
+            print("4. Run Optimization and show results")
+            print("5. Exit")
             
             choice = input("Select option: ").strip()
             
@@ -35,8 +34,6 @@ class DeliveryInterface:
             elif choice == '4':
                 self.run_optimization()
             elif choice == '5':
-                self.show_results()
-            elif choice == '6':
                 sys.exit()
             else:
                 print("Invalid choice!")
@@ -100,6 +97,7 @@ class DeliveryInterface:
             )
             
         print("Optimization complete!")
+        self.show_results()
         self.plot_routes()
 
     def show_results(self):
