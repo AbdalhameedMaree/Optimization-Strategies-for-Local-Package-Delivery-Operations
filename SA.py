@@ -4,16 +4,46 @@ import math
 from plot import plot_best_vehicle_routes
 import matplotlib.pyplot as plt
 
+
+def total_cost(vehicles):
+    # Existing distance cost
+    lambda_param=0.3
+    distance_cost = 0
+    for vehicle in vehicles:
+        if not vehicle.route:
+            continue
+        distance_cost += math.dist((0, 0), vehicle.route[0])
+        for i in range(len(vehicle.route) - 1):
+            distance_cost += math.dist(vehicle.route[i], vehicle.route[i + 1])
+    
+    priority_penalty = 0
+    for vehicle in vehicles:
+        for idx, package in enumerate(vehicle.packages):
+            priority_penalty += package.priority * (idx + 1)        
+     
+
+    total = distance_cost + lambda_param * priority_penalty 
+    return total
+
 def random_package_distribution(vehicles, packages):
     for package in packages:
-        while True:
-            vehicle = random.choice(vehicles)
-            if vehicle.capacity >= package.weight + vehicle.size:
-                vehicle.packages.append(package)
-                destination = package.destination
-                vehicle.route.append(destination)
-                vehicle.size += package.weight
-                break  
+        possible_vehicles = [v for v in vehicles if v.capacity >= v.size + package.weight]
+        if possible_vehicles:
+            vehicle = random.choice(possible_vehicles)
+            vehicle.packages.append(package)
+            vehicle.route.append(package.destination)
+            vehicle.size += package.weight  
+    max_pac=0
+    max_vex=0
+    for package in packages:
+        if package.weight > max_pac:
+            max_pac = package.weight
+    for vehcile in vehicles:
+        if vehcile.capacity > max_vex:
+            max_vex = vehcile.capacity 
+    if max_pac > max_vex:
+        print(f"\bcant store package with weight {max_pac} in any vehicle\n")
+        exit()
 
 def swap(arr, i, j):
     arr[i], arr[j] = arr[j], arr[i]
