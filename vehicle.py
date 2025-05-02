@@ -4,10 +4,7 @@ class Vehicle:
         self.capacity = capacity
         self.size = 0
         self.packages = []
-        self.route = [(0,0)]
-
-    def current_load(self):
-        return sum(p.weight for p in self.packages)
+        self.route = []
 
     def load_vehicle_file(self, filename="Vehicle.txt"):
         list_of_vehicles = []
