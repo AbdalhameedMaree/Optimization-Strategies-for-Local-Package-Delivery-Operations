@@ -36,6 +36,7 @@ def generate_chromosomes(vehicles, packages, population_size):
 
 # Fitness function (lower is better)
 def fitness(chrom, vehicles, packages):
+    lambda_param = 0.3
     loads = [0] * len(vehicles)
     for i, v in enumerate(chrom):
         loads[v] += packages[i].weight
@@ -53,9 +54,8 @@ def fitness(chrom, vehicles, packages):
             total_dist += euclidean(a, b)
 
     total_prio = sum(packages[i].priority for i in range(len(chrom)))
-    unpackaged = max(0, len(packages) - len(chrom))
 
-    return total_dist + total_prio * 10 + unpackaged * 15
+    return total_dist + total_prio * lambda_param 
 
 # Single-point crossover
 def crossover(parent1, parent2, crossover_point):
@@ -70,49 +70,6 @@ def mutate(chromosome, mutation_rate, num_vehicles):
         chromosome[idx] = random.randint(0, num_vehicles - 1)
     return chromosome
 
-# Main Genetic Algorithm function
-# def GeneticAlgorithm(vehicles, packages, num_generations, population_size, mutation_rate):
-#     population = generate_chromosomes(vehicles, packages, population_size)
-#     if not population:
-#         print("Failed to generate valid initial population.")
-#         return None
-
-#     best_chromosome = None
-
-#     for generation in range(num_generations):
-#         # Evaluate fitness for current population
-#         scored_population = [(chrom, fitness(chrom, vehicles, packages)) for chrom in population]
-#         scored_population = [p for p in scored_population if p[1] != float('inf')]
-
-#         if not scored_population:
-#             print("All chromosomes became invalid in generation", generation)
-#             break
-
-#         # Sort by fitness (ascending)
-#         scored_population.sort(key=lambda x: x[1])
-
-#         # Save best chromosome
-#         best_chromosome = scored_population[0][0]
-
-#         # Select top 50% to be parents
-#         survivors = [chrom for chrom, fit in scored_population[:len(scored_population) // 2]]
-
-#         # Generate new population via crossover + mutation
-#         new_population = []
-#         while len(new_population) < population_size:
-#             parent1 = random.choice(survivors)
-#             parent2 = random.choice(survivors)
-#             crossover_point = random.randint(1, len(parent1) - 1)
-#             child1, child2 = crossover(parent1, parent2, crossover_point)
-#             child1 = mutate(child1, mutation_rate, len(vehicles))
-#             child2 = mutate(child2, mutation_rate, len(vehicles))
-#             new_population.append(child1)
-#             new_population.append(child2)
-
-#         population = new_population[:population_size]
-
-#     return best_chromosome
-
 
 def GeneticAlgorithm(vehicles, packages, num_generations, population_size, mutation_rate):
     population = generate_chromosomes(vehicles, packages, population_size)
@@ -121,7 +78,7 @@ def GeneticAlgorithm(vehicles, packages, num_generations, population_size, mutat
         return None
 
     best_chromosome = None
-
+    cost = 0
     for generation in range(num_generations):
         scored_population = [(chrom, fitness(chrom, vehicles, packages)) for chrom in population]
         scored_population = [p for p in scored_population if p[1] != float('inf')]
@@ -132,7 +89,7 @@ def GeneticAlgorithm(vehicles, packages, num_generations, population_size, mutat
 
         scored_population.sort(key=lambda x: x[1])
         best_chromosome = scored_population[0][0]
-
+        cost = scored_population[0][1]
         survivors = [chrom for chrom, fit in scored_population[:len(scored_population) // 2]]
         new_population = []
         while len(new_population) < population_size:
@@ -145,7 +102,7 @@ def GeneticAlgorithm(vehicles, packages, num_generations, population_size, mutat
             new_population.extend([child1, child2])
 
         population = new_population[:population_size]
-
+        
     # Update vehicle routes and packages based on the best chromosome
     if best_chromosome is not None:
         for vehicle in vehicles:
@@ -163,4 +120,4 @@ def GeneticAlgorithm(vehicles, packages, num_generations, population_size, mutat
         # for vehicle in vehicles:
         #     vehicle.route.append((0, 0))
 
-    return vehicles  # Now returns the list of vehicles with updated routes
+    return vehicles , cost  # Now returns the list of vehicles with updated routes
